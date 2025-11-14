@@ -464,6 +464,38 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
 
     decoded_input_data = decoded_input(decoded_input)
 
+    deposited_to =
+      case {transaction.type, transaction.input} do
+        # When depositing ETH, the L2 transaction data is `mintETH(address to)`
+        {126, %Explorer.Chain.Data{bytes: <<
+          0xb0, 0xf4, 0xd3, 0x95, # function selector
+          _::binary-size(12), # address padding
+          address::binary-size(20),
+        >>}} ->
+          Helper.address_with_info(
+            single_transaction? && conn,
+            Address.get(address),
+            address,
+            single_transaction?
+          )
+        # When depositing ERC20, the L2 transaction data is
+        # `function mintERC20(address tokenL1, address tokenL2, address destination, uint256 amount)`
+        {126, %Explorer.Chain.Data{bytes: <<
+          0x79, 0x20, 0x4f, 0xe0,
+          _::binary-size(76), # address tokenL1 + address tokenL2 + address padding
+          address::binary-size(20),
+          _::binary # amount
+        >>}} ->
+          Helper.address_with_info(
+            single_transaction? && conn,
+            Address.get(address),
+            address,
+            single_transaction?
+          )
+        _ ->
+          nil
+      end
+
     result = %{
       "hash" => transaction.hash,
       "result" => status,
@@ -524,7 +556,8 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
         GetTransactionTags.get_transaction_tags(transaction.hash, current_user(single_transaction? && conn)),
       "has_error_in_internal_transactions" => transaction.has_error_in_internal_transactions,
       "authorization_list" => authorization_list(transaction.signed_authorizations),
-      "is_pending_update" => transaction.block && transaction.block.refetch_needed
+      "is_pending_update" => transaction.block && transaction.block.refetch_needed,
+      "deposited_to" => deposited_to
     }
 
     result

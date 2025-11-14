@@ -26,8 +26,8 @@ defmodule Explorer.Repo.Migrations.CreateTransactions do
       add(:internal_transactions_indexed_at, :utc_datetime_usec, null: true)
 
       add(:nonce, :integer, null: false)
-      add(:r, :numeric, precision: 100, null: false)
-      add(:s, :numeric, precision: 100, null: false)
+      add(:r, :numeric, precision: 100, null: true)
+      add(:s, :numeric, precision: 100, null: true)
 
       # `null` when a pending transaction
       add(:status, :integer, null: true)
