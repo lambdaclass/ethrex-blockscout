@@ -461,6 +461,10 @@ defmodule EthereumJSONRPC.Geth do
     |> Enum.reduce(acc, &parse_call_tracer_calls(&1, &2, trace_address))
   end
 
+  defp parse_call_tracer_calls({calls, _depth}, acc, trace_address, inner?) do
+    parse_call_tracer_calls(calls, acc, trace_address, inner?)
+  end
+
   defp log_unknown_type(call) do
     Logger.warning("Call from a callTracer with an unknown type: #{inspect(call)}")
   end
