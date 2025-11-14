@@ -1,0 +1,113 @@
+name: Publish Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: Image tags (metadata-action format)
+        required: false
+        type: string
+      build_args:
+        description: Build-time variables
+        required: false
+        type: string
+      platforms:
+        description: "Comma-separated platforms"
+        required: false
+        type: string
+        default: linux/amd64
+      private:
+        description: "Make image private"
+        required: false
+        type: boolean
+        default: true
+
+  workflow_call:
+    inputs:
+      tags:
+        type: string
+        required: false
+      build_args:
+        type: string
+        required: false
+      platforms:
+        type: string
+        required: false
+        default: linux/amd64
+      private:
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Remove .NET
+        shell: bash
+        run: sudo rm -rf /usr/share/dotnet/
+
+      - name: Remove Android SDK
+        shell: bash
+        run: sudo rm -rf /usr/local/lib/android
+
+      - name: Remove Haskell
+        shell: bash
+        run: sudo rm -rf /opt/ghc /usr/local/.ghcup
+
+
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Select image name
+        id: img
+        run: |
+          if [ "${{ inputs.private }}" = "true" ]; then
+            echo "name=ghcr.io/${{ github.repository_owner }}/backend-private" >> $GITHUB_OUTPUT
+          else
+            echo "name=ghcr.io/${{ github.repository_owner }}/backend" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.img.outputs.name }}
+          flavor: latest=false
+          tags: |
+            type=ref,event=tag
+            ${{ inputs.tags }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add SHORT_SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          cache-from: type=gha
+          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ inputs.platforms }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ env.SHORT_SHA }}
+            GIT_TAG=${{ github.ref_type == 'tag' && github.ref_name || '' }}
+            ${{ inputs.build_args }}
+
