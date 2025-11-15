@@ -42,7 +42,7 @@ jobs:
       # ---- BUILD WITH COMPOSE ----
       - name: Build image with docker compose
         run: |
-          docker compose -f docker-compose.yml build backend
+          docker compose -f docker-compose/docker-compose.yml build backend
 
       # ---- TAG IMAGES ----
       - name: Tag images for GHCR
