@@ -21,7 +21,7 @@ services:
 
   backend:
     image: ghcr.io/damiramirez/backend:ethrex
-    platform: linux/amd64
+    platform: linux/arm64
     pull_policy: always
     depends_on:
       - db
