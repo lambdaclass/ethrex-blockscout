@@ -23,15 +23,16 @@ jobs:
     name: Push Docker image to GitHub Container Registry
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Setup repo
-        uses: ./.github/actions/setup-repo
-        id: setup
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          docker-remote-multi-platform: true
-          docker-arm-host: ${{ secrets.ARM_RUNNER_HOSTNAME }}
-          docker-arm-host-key: ${{ secrets.ARM_RUNNER_KEY }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
