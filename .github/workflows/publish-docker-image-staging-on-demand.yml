@@ -40,8 +40,6 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: true
-          cache-from: type=registry,ref=ghcr.io/lambdaclass/blockscout:buildcache
-          cache-to: type=registry,ref=ghcr.io/lambdaclass/blockscout:buildcache,mode=max
           tags: ghcr.io/lambdaclass/blockscout-staging:latest, ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
           labels: ${{ steps.setup.outputs.docker-labels }}
           platforms: |
