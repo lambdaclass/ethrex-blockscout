@@ -20,17 +20,15 @@ services:
       service: db
 
   backend:
+    image: ghcr.io/lambdaclass/blockscout-staging:9.2.2.commit.
+    platform: linux/amd64
+    pull_policy: always
     depends_on:
       - db
       - redis-db
     extends:
       file: ./services/backend.yml
       service: backend
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
-      args:
-        RELEASE_VERSION: 9.2.2
     links:
       - db:database
     environment:
@@ -49,8 +47,9 @@ services:
       service: sig-provider
 
   frontend:
-    image: blockscout/frontend
-    pull_policy: missing
+    image: ghcr.io/lambdaclass/frontend-private:test
+    platform: linux/amd64
+    pull_policy: always
     depends_on:
       - backend
     extends:
