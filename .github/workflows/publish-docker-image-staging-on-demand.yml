@@ -45,8 +45,8 @@ jobs:
 
       - name: Tag images for GHCR
         run: |
-          docker tag blockscout ghcr.io/lambdaclass/blockscout-staging:latest
-          docker tag blockscout ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
+          docker tag docker-compose-backend ghcr.io/lambdaclass/blockscout-staging:latest
+          docker tag docker-compose-backend ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
 
       - name: Push to GHCR
         run: |
