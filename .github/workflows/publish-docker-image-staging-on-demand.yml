@@ -39,18 +39,15 @@ jobs:
       - name: Add SHORT_SHA env property with commit short sha
         run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
 
-      # ---- BUILD WITH COMPOSE ----
       - name: Build image with docker compose
         run: |
           docker compose -f docker-compose/docker-compose.yml build backend
 
-      # ---- TAG IMAGES ----
       - name: Tag images for GHCR
         run: |
-          docker tag blockscout-backend ghcr.io/lambdaclass/blockscout-staging:latest
-          docker tag blockscout-backend ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
+          docker tag blockscoutghcr.io/lambdaclass/blockscout-staging:latest
+          docker tag blockscoutghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
 
-      # ---- PUSH ----
       - name: Push to GHCR
         run: |
           docker push ghcr.io/lambdaclass/blockscout-staging:latest
