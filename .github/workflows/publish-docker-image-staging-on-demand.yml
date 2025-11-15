@@ -1,3 +1,4 @@
+
 name: Publish Docker image to staging on demand
 
 on:
@@ -9,6 +10,7 @@ on:
       - 'CHANGELOG.md'
       - '**/README.md'
       - 'docker-compose/*'
+
 env:
   OTP_VERSION: ${{ vars.OTP_VERSION }}
   ELIXIR_VERSION: ${{ vars.ELIXIR_VERSION }}
@@ -22,6 +24,7 @@ jobs:
   push_to_registry:
     name: Push Docker image to GitHub Container Registry
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -36,58 +39,19 @@ jobs:
       - name: Add SHORT_SHA env property with commit short sha
         run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          tags: ghcr.io/lambdaclass/blockscout-staging:latest, ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
-          labels: ${{ steps.setup.outputs.docker-labels }}
-          platforms: |
-            linux/amd64
-          build-args: |
-            DECODE_NOT_A_CONTRACT_CALLS=false
-            BLOCKSCOUT_VERSION=v${{ env.RELEASE_VERSION }}.+commit.${{ env.SHORT_SHA }}
-            RELEASE_VERSION=${{ env.RELEASE_VERSION }}
-            ETHEREUM_JSONRPC_VARIANT=geth
-            ETHEREUM_JSONRPC_HTTP_URL=http://host.docker.internal:1729/
-            DISABLE_FILE_LOGGING=false
-            DATABASE_URL=postgresql://blockscout:ceWb1MeLBEeOIfk65gU8EjF8@db:5432/blockscout
-            ETHEREUM_JSONRPC_TRANSPORT=http
-            ETHEREUM_JSONRPC_DISABLE_ARCHIVE_BALANCES=false
-            ETHEREUM_JSONRPC_TRACE_URL=http://host.docker.internal:1729/
-            SECRET_KEY_BASE=56NtB48ear7+wMSf0IQuWDAAazhpb31qyc7GiyspBP2vh7t5zlCsF5QDv76chXeN
-            PORT=4000
-            COIN_NAME=ETH
-            COIN=Ether
-            DISABLE_MARKET=true
-            POOL_SIZE=80
-            POOL_SIZE_API=10
-            ECTO_USE_SSL=false
-            HEART_BEAT_TIMEOUT=30
-            ADMIN_PANEL_ENABLED=false
-            API_V1_READ_METHODS_DISABLED=false
-            API_V1_WRITE_METHODS_DISABLED=false
-            TXS_STATS_DAYS_TO_COMPILE_AT_INIT=10
-            COIN_BALANCE_HISTORY_DAYS=90
-            RE_CAPTCHA_DISABLED=false
-            MICROSERVICE_SC_VERIFIER_TYPE=eth_bytecode_db
-            MICROSERVICE_VISUALIZE_SOL2UML_ENABLED=true
-            MICROSERVICE_VISUALIZE_SOL2UML_URL=http://visualizer:8050/
-            MICROSERVICE_SIG_PROVIDER_ENABLED=true
-            MICROSERVICE_SIG_PROVIDER_URL=http://sig-provider:8050/
-            MICROSERVICE_ACCOUNT_ABSTRACTION_URL=http://user-ops-indexer:8050/
-            DECODE_NOT_A_CONTRACT_CALLS=true
-            ACCOUNT_ENABLED=false
-            ACCOUNT_REDIS_URL=redis://redis-db:6379
-            NFT_MEDIA_HANDLER_ENABLED=false
-            NFT_MEDIA_HANDLER_REMOTE_DISPATCHER_NODE_MODE_ENABLED=false
-            RELEASE_NODE=producer@172.18.0.4
-            RELEASE_DISTRIBUTION=name
-            RELEASE_COOKIE=secret_cookie
-            DISABLE_API=false
-            CHAIN_TYPE=ethereum
-            BRIDGED_TOKENS_ENABLED=false
-            API_GRAPHQL_MAX_COMPLEXITY=100
+      # ---- BUILD WITH COMPOSE ----
+      - name: Build image with docker compose
+        run: |
+          docker compose -f docker-compose.yml build backend
 
+      # ---- TAG IMAGES ----
+      - name: Tag images for GHCR
+        run: |
+          docker tag blockscout-backend ghcr.io/lambdaclass/blockscout-staging:latest
+          docker tag blockscout-backend ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
+
+      # ---- PUSH ----
+      - name: Push to GHCR
+        run: |
+          docker push ghcr.io/lambdaclass/blockscout-staging:latest
+          docker push ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
