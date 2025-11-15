@@ -20,7 +20,7 @@ services:
       service: db
 
   backend:
-    image: ghcr.io/lambdaclass/blockscout-staging:9.2.2.commit.
+    image: ghcr.io/damiramirez/backend:ethrex
     platform: linux/amd64
     pull_policy: always
     depends_on:

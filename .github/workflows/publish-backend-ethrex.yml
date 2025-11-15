@@ -50,8 +50,8 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/lambdaclass/backend-private:buildcache
           cache-to: type=registry,ref=ghcr.io/lambdaclass/backend-private:buildcache,mode=max
           tags: |
-            ghcr.io/lambdaclass/backend-private:ethrex
-            ghcr.io/lambdaclass/backend-private:ethrex-${{ env.SHORT_SHA }}
+            ghcr.io/damiramirez/backend:ethrex
+            ghcr.io/damiramirez/backend:ethrex-${{ env.SHORT_SHA }}
           platforms: |
             linux/amd64
           build-args: |
