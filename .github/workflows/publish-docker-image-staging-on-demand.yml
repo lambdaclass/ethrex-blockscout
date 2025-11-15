@@ -88,4 +88,8 @@ jobs:
             RELEASE_NODE=producer@172.18.0.4
             RELEASE_DISTRIBUTION=name
             RELEASE_COOKIE=secret_cookie
+            DISABLE_API=false
+            CHAIN_TYPE=ethereum
+            BRIDGED_TOKENS_ENABLED=false
+            API_GRAPHQL_MAX_COMPLEXITY=100
 
