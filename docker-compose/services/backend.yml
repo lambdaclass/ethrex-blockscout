@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   backend:
-    image: ghcr.io/lambdaclass/blockscout-staging:9.2.2.commit.
+    image: ghcr.io/lambdaclass/blockscout-private:9.2.2.commit.763c41da
     pull_policy: always
     restart: always
     platform: linux/amd64
