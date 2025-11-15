@@ -48,9 +48,5 @@ jobs:
             linux/amd64
           build-args: |
             DECODE_NOT_A_CONTRACT_CALLS=false
-            MIXPANEL_URL=
-            MIXPANEL_TOKEN=
-            AMPLITUDE_URL=
-            AMPLITUDE_API_KEY=
             BLOCKSCOUT_VERSION=v${{ env.RELEASE_VERSION }}.+commit.${{ env.SHORT_SHA }}
             RELEASE_VERSION=${{ env.RELEASE_VERSION }}
