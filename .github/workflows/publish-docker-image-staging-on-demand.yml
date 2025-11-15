@@ -44,7 +44,6 @@ jobs:
           labels: ${{ steps.setup.outputs.docker-labels }}
           platforms: |
             linux/amd64
-            linux/arm64/v8
           build-args: |
             DECODE_NOT_A_CONTRACT_CALLS=false
             MIXPANEL_URL=
