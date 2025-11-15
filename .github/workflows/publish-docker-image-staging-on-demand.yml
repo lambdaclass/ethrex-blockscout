@@ -66,7 +66,6 @@ jobs:
             POOL_SIZE_API=10
             ECTO_USE_SSL=false
             HEART_BEAT_TIMEOUT=30
-            RELEASE_LINK=
             ADMIN_PANEL_ENABLED=false
             API_V1_READ_METHODS_DISABLED=false
             API_V1_WRITE_METHODS_DISABLED=false
@@ -80,7 +79,6 @@ jobs:
             MICROSERVICE_SIG_PROVIDER_URL=http://sig-provider:8050/
             MICROSERVICE_ACCOUNT_ABSTRACTION_URL=http://user-ops-indexer:8050/
             DECODE_NOT_A_CONTRACT_CALLS=true
-            ACCOUNT_CLOAK_KEY=
             ACCOUNT_ENABLED=false
             ACCOUNT_REDIS_URL=redis://redis-db:6379
             NFT_MEDIA_HANDLER_ENABLED=false
