@@ -29,6 +29,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -39,16 +45,25 @@ jobs:
       - name: Add SHORT_SHA env property with commit short sha
         run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
 
-      - name: Build image with docker compose
-        run: |
-          docker compose -f docker-compose/docker-compose.yml build backend
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          cache-from: type=registry,ref=ghcr.io/lambdaclass/blockscout-private:buildcache
+          cache-to: type=registry,ref=ghcr.io/lambdaclass/blockscout-private:buildcache,mode=max
+          tags: ghcr.io/lambdaclass/blockscout-private:master, ghcr.io/lambdaclass/blockscout-private:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
+          labels: ${{ steps.setup.outputs.docker-labels }}
+          platforms: |
+            linux/amd64
+            linux/arm64/v8
+          build-args: |
+            DECODE_NOT_A_CONTRACT_CALLS=false
+            MIXPANEL_URL=
+            MIXPANEL_TOKEN=
+            AMPLITUDE_URL=
+            AMPLITUDE_API_KEY=
+            BLOCKSCOUT_VERSION=v${{ env.RELEASE_VERSION }}.+commit.${{ env.SHORT_SHA }}
+            RELEASE_VERSION=${{ env.RELEASE_VERSION }}
 
-      - name: Tag images for GHCR
-        run: |
-          docker tag docker-compose-backend ghcr.io/lambdaclass/blockscout-staging:latest
-          docker tag docker-compose-backend ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
-
-      - name: Push to GHCR
-        run: |
-          docker push ghcr.io/lambdaclass/blockscout-staging:latest
-          docker push ghcr.io/lambdaclass/blockscout-staging:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
