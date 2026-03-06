@@ -333,6 +333,47 @@ defmodule EthereumJSONRPC.Transaction do
   # ## Returns
   # - The resulting map.
   @spec do_elixir_to_params(%{String.t() => any()}) :: %{atom() => any()}
+
+  # EIP-8141 frame transactions (type 6) — no gas, input, value, or to fields
+  defp do_elixir_to_params(
+         %{
+           "blockHash" => block_hash,
+           "blockNumber" => block_number,
+           "from" => from_address_hash,
+           "hash" => hash,
+           "nonce" => nonce,
+           "transactionIndex" => index,
+           "type" => 6,
+           "maxPriorityFeePerGas" => max_priority_fee_per_gas,
+           "maxFeePerGas" => max_fee_per_gas
+         } = transaction
+       ) do
+    result = %{
+      block_hash: block_hash,
+      block_number: block_number,
+      from_address_hash: from_address_hash,
+      gas: 0,
+      gas_price: nil,
+      hash: hash,
+      index: index,
+      input: "0x",
+      nonce: nonce,
+      to_address_hash: from_address_hash,
+      value: 0,
+      transaction_index: index,
+      type: 6,
+      max_priority_fee_per_gas: max_priority_fee_per_gas,
+      max_fee_per_gas: max_fee_per_gas,
+      r: 0,
+      s: 0,
+      v: 0
+    }
+
+    put_if_present(result, transaction, [
+      {"block_timestamp", :block_timestamp}
+    ])
+  end
+
   defp do_elixir_to_params(
          %{
            "blockHash" => block_hash,
@@ -723,7 +764,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes requestId),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes requestId sender),
        do: {key, value}
 
   # specific to Nethermind client

@@ -34,9 +34,9 @@ services:
     links:
       - db:database
     environment:
-        ETHEREUM_JSONRPC_HTTP_URL: http://host.docker.internal:1729/
-        ETHEREUM_JSONRPC_TRACE_URL: http://host.docker.internal:1729/
-        CHAIN_ID: '65536999'
+        ETHEREUM_JSONRPC_HTTP_URL: http://host.docker.internal:8545/
+        ETHEREUM_JSONRPC_TRACE_URL: http://host.docker.internal:8545/
+        CHAIN_ID: '1729'
 
   visualizer:
     extends:
@@ -49,7 +49,7 @@ services:
       service: sig-provider
 
   frontend:
-    image: blockscout/frontend
+    image: ghcr.io/blockscout/frontend:latest
     pull_policy: missing
     depends_on:
       - backend
@@ -77,6 +77,11 @@ services:
     extends:
       file: ./services/stats.yml
       service: stats
+
+  smart-contract-verifier:
+    extends:
+      file: ./services/smart-contract-verifier.yml
+      service: smart-contract-verifier
 
   user-ops-indexer:
     depends_on:
