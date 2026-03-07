@@ -49,13 +49,15 @@ services:
       service: sig-provider
 
   frontend:
-    image: ghcr.io/blockscout/frontend:latest
-    pull_policy: missing
     depends_on:
       - backend
-    extends:
-      file: ./services/frontend.yml
-      service: frontend
+    build:
+      context: ../../blockscout-frontend
+      dockerfile: Dockerfile
+    restart: always
+    container_name: 'frontend'
+    env_file:
+      - ./envs/common-frontend.env
 
   stats-db-init:
     extends:

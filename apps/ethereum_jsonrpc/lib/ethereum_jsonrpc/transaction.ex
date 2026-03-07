@@ -369,9 +369,15 @@ defmodule EthereumJSONRPC.Transaction do
       v: 0
     }
 
-    put_if_present(result, transaction, [
-      {"block_timestamp", :block_timestamp}
-    ])
+    result =
+      put_if_present(result, transaction, [
+        {"block_timestamp", :block_timestamp}
+      ])
+
+    case Map.get(transaction, "frames") do
+      frames when is_list(frames) -> Map.put(result, :frames, frames)
+      _ -> result
+    end
   end
 
   defp do_elixir_to_params(
@@ -804,6 +810,23 @@ defmodule EthereumJSONRPC.Transaction do
 
   defp entry_to_elixir({"authorizationList" = key, value}),
     do: {key, value |> Enum.map(&SignedAuthorization.to_params/1)}
+
+  defp entry_to_elixir({"frames" = key, value}) when is_list(value) do
+    frames =
+      value
+      |> Enum.with_index()
+      |> Enum.map(fn {frame, index} ->
+        %{
+          frame_index: index,
+          mode: quantity_to_integer(frame["mode"]),
+          target_address_hash: frame["to"],
+          gas_limit: quantity_to_integer(frame["gasLimit"]),
+          data: frame["data"] || "0x"
+        }
+      end)
+
+    {key, frames}
+  end
 
   # Celo-specific fields
   if @chain_identity == {:optimism, :celo} do

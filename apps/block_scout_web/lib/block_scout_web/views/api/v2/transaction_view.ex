@@ -556,6 +556,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
         GetTransactionTags.get_transaction_tags(transaction.hash, current_user(single_transaction? && conn)),
       "has_error_in_internal_transactions" => transaction.has_error_in_internal_transactions,
       "authorization_list" => authorization_list(transaction.signed_authorizations),
+      "frame_details" => frame_details(transaction),
       "is_pending_update" => transaction.block && transaction.block.refetch_needed,
       "deposited_to" => deposited_to
     }
@@ -605,6 +606,25 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
   def authorization_list(signed_authorizations) do
     render("authorization_list.json", %{signed_authorizations: signed_authorizations})
   end
+
+  @frame_mode_names %{0 => "DEFAULT", 1 => "VERIFY", 2 => "SENDER"}
+
+  defp frame_details(%{type: 6, transaction_frames: frames}) when is_list(frames) do
+    frames
+    |> Enum.sort_by(& &1.frame_index, :asc)
+    |> Enum.map(fn frame ->
+      %{
+        "index" => frame.frame_index,
+        "mode" => Map.get(@frame_mode_names, frame.mode, "UNKNOWN"),
+        "mode_id" => frame.mode,
+        "to" => frame.target_address_hash && Address.checksum(frame.target_address_hash),
+        "gas_limit" => frame.gas_limit,
+        "data" => frame.data
+      }
+    end)
+  end
+
+  defp frame_details(_), do: nil
 
   defp burnt_fees(transaction, max_fee_per_gas, base_fee_per_gas) do
     if !is_nil(max_fee_per_gas) and !is_nil(transaction.gas_used) and !is_nil(base_fee_per_gas) do

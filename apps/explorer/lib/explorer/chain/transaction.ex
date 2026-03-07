@@ -23,6 +23,7 @@ defmodule Explorer.Chain.Transaction.Schema do
     SignedAuthorization,
     TokenTransfer,
     TransactionAction,
+    TransactionFrame,
     Wei
   }
 
@@ -293,6 +294,11 @@ defmodule Explorer.Chain.Transaction.Schema do
         )
 
         has_many(:signed_authorizations, SignedAuthorization,
+          foreign_key: :transaction_hash,
+          references: :hash
+        )
+
+        has_many(:transaction_frames, TransactionFrame,
           foreign_key: :transaction_hash,
           references: :hash
         )

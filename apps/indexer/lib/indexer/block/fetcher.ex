@@ -55,7 +55,8 @@ defmodule Indexer.Block.Fetcher do
     SignedAuthorizations,
     TokenInstances,
     TokenTransfers,
-    TransactionActions
+    TransactionActions,
+    TransactionFrames
   }
 
   alias Indexer.Transform.Stability.Validators, as: StabilityValidators
@@ -254,7 +255,8 @@ defmodule Indexer.Block.Fetcher do
            transactions: %{params: transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances},
-           signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)}
+           signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)},
+           transaction_frames: %{params: TransactionFrames.parse(transactions_with_receipts)}
          },
          chain_type_import_options =
            %{
