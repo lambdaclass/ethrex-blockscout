@@ -39,7 +39,7 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
     formatParam: {
       value: (v) => {
         const val = v as bigint;
-        return val === 0n ? '0' : `${ formatEther(val) } ETH`;
+        return val === BigInt(0) ? '0' : `${ formatEther(val) } ETH`;
       },
     },
   },
