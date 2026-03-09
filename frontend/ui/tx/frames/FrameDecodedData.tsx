@@ -1,6 +1,6 @@
-import { Box, Flex, Grid, GridItem } from '@chakra-ui/react';
+import { Box, Flex, Grid } from '@chakra-ui/react';
 import React from 'react';
-import { decodeAbiParameters, formatEther, formatUnits } from 'viem';
+import { decodeAbiParameters } from 'viem';
 import type { AbiParameter } from 'viem';
 
 import { Badge } from 'toolkit/chakra/badge';
@@ -13,7 +13,6 @@ interface KnownFunction {
   name: string;
   signature: string;
   params: readonly AbiParameter[];
-  formatParam?: Record<string, (value: unknown) => string>;
 }
 
 const KNOWN_SELECTORS: Record<string, KnownFunction> = {
@@ -24,9 +23,6 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
       { name: 'to', type: 'address' },
       { name: 'amount', type: 'uint256' },
     ],
-    formatParam: {
-      amount: (v) => `${ formatUnits(v as bigint, 18) } tokens`,
-    },
   },
   '0xb61d27f6': {
     name: 'execute',
@@ -36,12 +32,6 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
       { name: 'value', type: 'uint256' },
       { name: 'data', type: 'bytes' },
     ],
-    formatParam: {
-      value: (v) => {
-        const val = v as bigint;
-        return val === BigInt(0) ? '0' : `${ formatEther(val) } ETH`;
-      },
-    },
   },
   '0x182ffd20': {
     name: 'verify',
@@ -95,7 +85,7 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
   },
   '0xfc735e99': {
     name: 'verify',
-    signature: 'verify() — GasSponsor: checks sender token balance and approves gas payment',
+    signature: 'verify()',
     params: [],
   },
   '0x095ea7b3': {
@@ -105,9 +95,6 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
       { name: 'spender', type: 'address' },
       { name: 'amount', type: 'uint256' },
     ],
-    formatParam: {
-      amount: (v) => `${ formatUnits(v as bigint, 18) } tokens`,
-    },
   },
   '0x23b872dd': {
     name: 'transferFrom',
@@ -117,9 +104,6 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
       { name: 'to', type: 'address' },
       { name: 'amount', type: 'uint256' },
     ],
-    formatParam: {
-      amount: (v) => `${ formatUnits(v as bigint, 18) } tokens`,
-    },
   },
 };
 
@@ -127,13 +111,11 @@ interface DecodedParam {
   name: string;
   type: string;
   value: string;
-  formattedValue?: string;
 }
 
 function flattenTupleParams(
   params: readonly AbiParameter[],
   values: readonly unknown[],
-  formatParam?: Record<string, (value: unknown) => string>,
 ): Array<DecodedParam> {
   const result: Array<DecodedParam> = [];
 
@@ -142,7 +124,6 @@ function flattenTupleParams(
     const value = values[i];
 
     if (param.type === 'tuple' && 'components' in param && param.components) {
-      // Flatten tuple: show each component as "parent.child"
       const tupleValue = value as Record<string, unknown>;
       for (const comp of param.components) {
         const compValue = tupleValue[comp.name || ''];
@@ -154,12 +135,10 @@ function flattenTupleParams(
         });
       }
     } else {
-      const formatted = formatParam?.[param.name || '']?.(value);
       result.push({
         name: param.name || `param_${ i }`,
         type: param.type,
         value: formatValue(param.type, value),
-        formattedValue: formatted,
       });
     }
   }
@@ -207,7 +186,7 @@ function tryDecode(data: string): DecodeResult | null {
   try {
     const paramsHex = `0x${ data.slice(10) }` as `0x${string}`;
     const decoded = decodeAbiParameters(func.params, paramsHex);
-    const params = flattenTupleParams(func.params, decoded as unknown as readonly unknown[], func.formatParam);
+    const params = flattenTupleParams(func.params, decoded as unknown as readonly unknown[]);
 
     // Try to recursively decode the 'data' param in execute()
     let innerDecode: DecodeResult | undefined;
@@ -246,20 +225,6 @@ const ParamRow = ({ param, isLoading }: { param: DecodedParam; isLoading?: boole
           address={{ hash: param.value }}
           isLoading={ isLoading }
         />
-      );
-    }
-
-    if (param.formattedValue) {
-      return (
-        <Flex alignItems="flex-start" justifyContent="space-between" whiteSpace="normal" wordBreak="break-all" gap={ 2 }>
-          <Box>
-            <TruncatedValue value={ param.formattedValue } isLoading={ isLoading }/>
-            <Box color="text.secondary" fontSize="xs">
-              <TruncatedValue value={ param.value } isLoading={ isLoading }/>
-            </Box>
-          </Box>
-          <CopyToClipboard text={ param.value } isLoading={ isLoading }/>
-        </Flex>
       );
     }
 
