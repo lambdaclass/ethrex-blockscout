@@ -93,6 +93,11 @@ const KNOWN_SELECTORS: Record<string, KnownFunction> = {
       },
     ],
   },
+  '0xfc735e99': {
+    name: 'verify',
+    signature: 'verify() — GasSponsor: checks sender token balance and approves gas payment',
+    params: [],
+  },
   '0x095ea7b3': {
     name: 'approve',
     signature: 'approve(address spender, uint256 amount)',
