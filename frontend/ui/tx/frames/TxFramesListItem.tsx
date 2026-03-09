@@ -1,4 +1,4 @@
-import { HStack } from '@chakra-ui/react';
+import { Box, Flex, Grid, GridItem } from '@chakra-ui/react';
 import React from 'react';
 
 import type { TxFrame } from 'types/api/transaction';
@@ -6,7 +6,7 @@ import type { TxFrame } from 'types/api/transaction';
 import { Skeleton } from 'toolkit/chakra/skeleton';
 import { Tag } from 'toolkit/chakra/tag';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
-import ListItemMobile from 'ui/shared/ListItemMobile/ListItemMobile';
+import RawDataSnippet from 'ui/shared/RawDataSnippet';
 
 interface Props extends TxFrame {
   isLoading?: boolean;
@@ -18,32 +18,66 @@ const MODE_COLORS: Record<string, 'purple' | 'blue' | 'green' | 'gray'> = {
   DEFAULT: 'green',
 };
 
+const MODE_DESCRIPTIONS: Record<string, string> = {
+  VERIFY: 'Signature verification',
+  SENDER: 'User operation',
+  DEFAULT: 'Contract execution',
+};
+
 const TxFramesListItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoading }: Props) => {
+  const dataBytes = data ? Math.floor((data.length - 2) / 2) : 0;
+
   return (
-    <ListItemMobile rowGap={ 3 } fontSize="sm">
-      <HStack gap={ 3 } w="100%">
-        <Skeleton loading={ isLoading } fontWeight={ 500 }>Frame { index }</Skeleton>
-        <Tag colorPalette={ MODE_COLORS[mode] || 'gray' }>{ mode }</Tag>
-      </HStack>
-      <HStack gap={ 3 } w="100%">
-        <Skeleton loading={ isLoading } fontWeight={ 500 }>Target</Skeleton>
-        { to ? (
-          <AddressEntity address={{ hash: to }} isLoading={ isLoading } noIcon/>
-        ) : (
-          <Skeleton loading={ isLoading } color="text.secondary">CREATE</Skeleton>
-        ) }
-      </HStack>
-      <HStack gap={ 3 }>
-        <Skeleton loading={ isLoading } fontWeight={ 500 }>Gas limit</Skeleton>
-        <Skeleton loading={ isLoading } color="text.secondary">{ Number(gasLimit).toLocaleString() }</Skeleton>
-      </HStack>
-      <HStack gap={ 3 }>
-        <Skeleton loading={ isLoading } fontWeight={ 500 }>Data</Skeleton>
-        <Skeleton loading={ isLoading } color="text.secondary" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap" maxW="200px">
-          { data }
+    <Box
+      py={ 4 }
+      _notFirst={{
+        borderTopWidth: '1px',
+        borderTopColor: { _light: 'blackAlpha.200', _dark: 'whiteAlpha.200' },
+      }}
+    >
+      <Flex alignItems="center" gap={ 2 } mb={ 3 } flexWrap="wrap">
+        <Skeleton loading={ isLoading } fontWeight={ 600 } fontSize="sm">
+          Frame { index }
         </Skeleton>
-      </HStack>
-    </ListItemMobile>
+        <Skeleton loading={ isLoading } display="inline-block">
+          <Tag colorPalette={ MODE_COLORS[mode] || 'gray' } size="sm">{ mode }</Tag>
+        </Skeleton>
+        <Skeleton loading={ isLoading } display="inline-block" color="text.secondary" fontSize="xs">
+          { MODE_DESCRIPTIONS[mode] || '' }
+        </Skeleton>
+      </Flex>
+
+      <Grid gridTemplateColumns="80px minmax(0, 1fr)" gap={ 1 } mb={ 3 }>
+        <GridItem>
+          <Skeleton loading={ isLoading } fontWeight={ 500 } fontSize="sm" color="text.secondary">Target</Skeleton>
+        </GridItem>
+        <GridItem>
+          { to ? (
+            <AddressEntity address={{ hash: to }} isLoading={ isLoading } noIcon truncation="dynamic" fontSize="sm"/>
+          ) : (
+            <Skeleton loading={ isLoading } display="inline-block">
+              <Tag colorPalette="teal" size="sm">CREATE</Tag>
+            </Skeleton>
+          ) }
+        </GridItem>
+
+        <GridItem>
+          <Skeleton loading={ isLoading } fontWeight={ 500 } fontSize="sm" color="text.secondary">Gas limit</Skeleton>
+        </GridItem>
+        <GridItem>
+          <Skeleton loading={ isLoading } display="inline-block" fontSize="sm">
+            { Number(gasLimit).toLocaleString() }
+          </Skeleton>
+        </GridItem>
+      </Grid>
+
+      <RawDataSnippet
+        data={ data }
+        title={ `Data (${ dataBytes.toLocaleString() } bytes)` }
+        textareaMaxHeight="120px"
+        isLoading={ isLoading }
+      />
+    </Box>
   );
 };
 
