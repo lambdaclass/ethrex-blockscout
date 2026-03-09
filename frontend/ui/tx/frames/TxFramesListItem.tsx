@@ -7,6 +7,7 @@ import { Skeleton } from 'toolkit/chakra/skeleton';
 import { Tag } from 'toolkit/chakra/tag';
 import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 import RawDataSnippet from 'ui/shared/RawDataSnippet';
+import FrameDecodedData from './FrameDecodedData';
 
 interface Props extends TxFrame {
   isLoading?: boolean;
@@ -71,9 +72,15 @@ const TxFramesListItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoadin
         </GridItem>
       </Grid>
 
+      { data && data !== '0x' && (
+        <Box mb={ 3 }>
+          <FrameDecodedData data={ data } isLoading={ isLoading }/>
+        </Box>
+      ) }
+
       <RawDataSnippet
         data={ data }
-        title={ `Data (${ dataBytes.toLocaleString() } bytes)` }
+        title={ `Raw data (${ dataBytes.toLocaleString() } bytes)` }
         textareaMaxHeight="120px"
         isLoading={ isLoading }
       />
