@@ -557,6 +557,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "has_error_in_internal_transactions" => transaction.has_error_in_internal_transactions,
       "authorization_list" => authorization_list(transaction.signed_authorizations),
       "frame_details" => frame_details(transaction),
+      "payer" => payer_info(transaction, single_transaction?, conn, watchlist_names),
       "is_pending_update" => transaction.block && transaction.block.refetch_needed,
       "deposited_to" => deposited_to
     }
@@ -619,12 +620,31 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
         "mode_id" => frame.mode,
         "to" => frame.target_address_hash && Address.checksum(frame.target_address_hash),
         "gas_limit" => frame.gas_limit,
-        "data" => frame.data
+        "data" => frame.data,
+        "gas_used" => frame.gas_used,
+        "status" => frame_status(frame.status)
       }
     end)
   end
 
   defp frame_details(_), do: nil
+
+  defp frame_status(true), do: "ok"
+  defp frame_status(false), do: "error"
+  defp frame_status(_), do: nil
+
+  defp payer_info(%{type: 6, payer_address_hash: hash} = tx, single_transaction?, conn, watchlist_names)
+       when not is_nil(hash) do
+    Helper.address_with_info(
+      single_transaction? && conn,
+      Map.get(tx, :payer_address),
+      hash,
+      single_transaction?,
+      watchlist_names
+    )
+  end
+
+  defp payer_info(_, _, _, _), do: nil
 
   defp burnt_fees(transaction, max_fee_per_gas, base_fee_per_gas) do
     if !is_nil(max_fee_per_gas) and !is_nil(transaction.gas_used) and !is_nil(base_fee_per_gas) do

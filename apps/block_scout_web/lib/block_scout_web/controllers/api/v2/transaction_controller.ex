@@ -158,6 +158,7 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
       |> Map.put(:transaction_actions, :optional)
       |> Map.put(:signed_authorizations, :optional)
       |> Map.put(:transaction_frames, :optional)
+      |> Map.put(:payer_address, :optional)
 
     necessity_by_association =
       case Application.get_env(:explorer, :chain_type) do

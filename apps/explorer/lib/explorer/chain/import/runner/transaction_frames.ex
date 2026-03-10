@@ -88,17 +88,21 @@ defmodule Explorer.Chain.Import.Runner.TransactionFrames do
           target_address_hash: fragment("EXCLUDED.target_address_hash"),
           gas_limit: fragment("EXCLUDED.gas_limit"),
           data: fragment("EXCLUDED.data"),
+          status: fragment("EXCLUDED.status"),
+          gas_used: fragment("EXCLUDED.gas_used"),
           inserted_at: fragment("LEAST(?, EXCLUDED.inserted_at)", frame.inserted_at),
           updated_at: fragment("GREATEST(?, EXCLUDED.updated_at)", frame.updated_at)
         ]
       ],
       where:
         fragment(
-          "(EXCLUDED.mode, EXCLUDED.target_address_hash, EXCLUDED.gas_limit, EXCLUDED.data) IS DISTINCT FROM (?, ?, ?, ?)",
+          "(EXCLUDED.mode, EXCLUDED.target_address_hash, EXCLUDED.gas_limit, EXCLUDED.data, EXCLUDED.status, EXCLUDED.gas_used) IS DISTINCT FROM (?, ?, ?, ?, ?, ?)",
           frame.mode,
           frame.target_address_hash,
           frame.gas_limit,
-          frame.data
+          frame.data,
+          frame.status,
+          frame.gas_used
         )
     )
   end

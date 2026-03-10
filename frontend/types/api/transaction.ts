@@ -111,6 +111,7 @@ export type Transaction = {
   authorization_list?: Array<TxAuthorization>;
   // EIP-8141 Frame Transactions
   frame_details?: Array<TxFrame> | null;
+  payer?: AddressParam;
   // Interop
   op_interop_messages?: Array<InteropTransactionInfo>;
 };
@@ -229,6 +230,8 @@ export interface TxFrame {
   to: string | null;
   gas_limit: string;
   data: string;
+  gas_used?: string;
+  status?: 'ok' | 'error';
 }
 
 export interface InteropTransactionInfo {

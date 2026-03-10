@@ -303,6 +303,14 @@ defmodule Explorer.Chain.Transaction.Schema do
           references: :hash
         )
 
+        belongs_to(
+          :payer_address,
+          Address,
+          foreign_key: :payer_address_hash,
+          references: :hash,
+          type: Hash.Address
+        )
+
         has_one(:pending_operation, PendingTransactionOperation, foreign_key: :transaction_hash, references: :hash)
 
         unquote_splicing(@chain_type_fields)
@@ -358,7 +366,8 @@ defmodule Explorer.Chain.Transaction do
                      block_consensus block_timestamp created_contract_address_hash
                      cumulative_gas_used earliest_processing_start error gas_price
                      gas_used index created_contract_code_indexed_at status
-                     to_address_hash revert_reason type has_error_in_internal_transactions r s v)a
+                     to_address_hash revert_reason type has_error_in_internal_transactions r s v
+                     payer_address_hash)a
 
   @chain_type_optional_attrs (case @chain_type do
                                 :optimism ->

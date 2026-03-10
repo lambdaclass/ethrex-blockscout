@@ -229,6 +229,7 @@ defmodule EthereumJSONRPC.Receipt do
       transaction_index: transaction_index
     }
     |> maybe_append_gas_price(elixir)
+    |> maybe_append_frame_receipt_fields(elixir)
   end
 
   defp maybe_append_gas_price(params, %{"effectiveGasPrice" => effective_gas_price}) do
@@ -240,6 +241,15 @@ defmodule EthereumJSONRPC.Receipt do
   end
 
   defp maybe_append_gas_price(params, _), do: params
+
+  defp maybe_append_frame_receipt_fields(params, %{"payer" => payer, "frameReceipts" => frame_receipts})
+       when not is_nil(payer) and is_list(frame_receipts) do
+    params
+    |> Map.put(:payer_address_hash, payer)
+    |> Map.put(:frame_receipts, frame_receipts)
+  end
+
+  defp maybe_append_frame_receipt_fields(params, _), do: params
 
   case @chain_type do
     :ethereum ->
@@ -406,7 +416,7 @@ defmodule EthereumJSONRPC.Receipt do
   # gas is passed in from the `t:EthereumJSONRPC.Transaction.params/0` to allow pre-Byzantium status to be derived
   defp entry_to_elixir({key, _} = entry)
        when key in ~w(blockHash contractAddress from gas logsBloom root to transactionHash
-                      revertReason type l1FeeScalar),
+                      revertReason type l1FeeScalar payer),
        do: {:ok, entry}
 
   defp entry_to_elixir({key, quantity})
@@ -443,6 +453,29 @@ defmodule EthereumJSONRPC.Receipt do
       other ->
         {:error, {:unknown_value, %{key: key, value: other}}}
     end
+  end
+
+  defp entry_to_elixir({"frameReceipts" = key, frame_receipts}) when is_list(frame_receipts) do
+    parsed =
+      frame_receipts
+      |> Enum.with_index()
+      |> Enum.map(fn {fr, index} ->
+        status =
+          case fr["status"] do
+            zero when zero in ["0x0", "0x00"] -> :error
+            one when one in ["0x1", "0x01"] -> :ok
+            _ -> nil
+          end
+
+        %{
+          frame_index: index,
+          status: status,
+          gas_used: quantity_to_integer(fr["gasUsed"]),
+          logs: Map.get(fr, "logs", [])
+        }
+      end)
+
+    {:ok, {key, parsed}}
   end
 
   defp entry_to_elixir({_, _}) do

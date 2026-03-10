@@ -18,8 +18,8 @@ import PageTitle from 'ui/shared/Page/PageTitle';
 import TxAssetFlows from 'ui/tx/TxAssetFlows';
 import TxAuthorizations from 'ui/tx/TxAuthorizations';
 import TxBlobs from 'ui/tx/TxBlobs';
-import TxFrames from 'ui/tx/TxFrames';
 import TxDetails from 'ui/tx/TxDetails';
+import FrameTransactionDetails from 'ui/tx/details/FrameTransactionDetails';
 import TxDetailsDegraded from 'ui/tx/TxDetailsDegraded';
 import TxDetailsWrapped from 'ui/tx/TxDetailsWrapped';
 import TxInternals from 'ui/tx/TxInternals';
@@ -56,9 +56,12 @@ const TransactionPageContent = () => {
   const showDegradedView = publicClient && ((isError && error.status !== 422) || isPlaceholderData) && errorUpdateCount > 0;
 
   const tabs: Array<TabItemRegular> = (() => {
+    const isFrameTx = data?.type === 6;
     const detailsComponent = showDegradedView ?
       <TxDetailsDegraded hash={ hash } txQuery={ txQuery }/> :
-      <TxDetails txQuery={ txQuery } tacOperationQuery={ tacFeature.isEnabled ? tacOperationQuery : undefined }/>;
+      isFrameTx && data ?
+        <FrameTransactionDetails transaction={ data } isLoading={ isPlaceholderData }/> :
+        <TxDetails txQuery={ txQuery } tacOperationQuery={ tacFeature.isEnabled ? tacOperationQuery : undefined }/>;
 
     return [
       {
@@ -85,9 +88,6 @@ const TransactionPageContent = () => {
       { id: 'raw_trace', title: 'Raw trace', component: <TxRawTrace txQuery={ txQuery }/> },
       txQuery.data?.authorization_list?.length ?
         { id: 'authorizations', title: 'Authorizations', component: <TxAuthorizations txQuery={ txQuery }/> } :
-        undefined,
-      txQuery.data?.frame_details?.length ?
-        { id: 'frames', title: 'Frames', component: <TxFrames txQuery={ txQuery }/> } :
         undefined,
     ].filter(Boolean);
   })();

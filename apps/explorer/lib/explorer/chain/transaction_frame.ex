@@ -16,7 +16,9 @@ defmodule Explorer.Chain.TransactionFrame do
           mode: non_neg_integer(),
           target_address_hash: Hash.Address.t() | nil,
           gas_limit: Decimal.t(),
-          data: Data.t()
+          data: Data.t(),
+          status: boolean() | nil,
+          gas_used: Decimal.t() | nil
         }
 
   @primary_key false
@@ -26,6 +28,8 @@ defmodule Explorer.Chain.TransactionFrame do
     field(:target_address_hash, Hash.Address)
     field(:gas_limit, :decimal)
     field(:data, Data)
+    field(:status, :boolean)
+    field(:gas_used, :decimal)
 
     belongs_to(:transaction, Transaction,
       foreign_key: :transaction_hash,
@@ -38,7 +42,7 @@ defmodule Explorer.Chain.TransactionFrame do
   end
 
   @required_attrs ~w(transaction_hash frame_index mode gas_limit data)a
-  @optional_attrs ~w(target_address_hash)a
+  @optional_attrs ~w(target_address_hash status gas_used)a
 
   def changeset(%__MODULE__{} = frame, attrs \\ %{}) do
     frame
