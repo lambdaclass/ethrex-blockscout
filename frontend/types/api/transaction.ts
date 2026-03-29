@@ -227,6 +227,9 @@ export interface TxFrame {
   index: number;
   mode: string;
   mode_id: number;
+  scope: string;
+  scope_id: number;
+  atomic_batch: boolean;
   to: string | null;
   gas_limit: string;
   data: string;

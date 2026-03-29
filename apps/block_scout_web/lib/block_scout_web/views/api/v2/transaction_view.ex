@@ -609,15 +609,24 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
   end
 
   @frame_mode_names %{0 => "DEFAULT", 1 => "VERIFY", 2 => "SENDER"}
+  @scope_names %{0 => "any", 1 => "sender", 2 => "payer", 3 => "combined"}
 
   defp frame_details(%{type: 6, transaction_frames: frames}) when is_list(frames) do
     frames
     |> Enum.sort_by(& &1.frame_index, :asc)
     |> Enum.map(fn frame ->
+      import Bitwise
+      exec_mode = frame.mode &&& 0xFF
+      scope = (frame.mode >>> 8) &&& 3
+      atomic = ((frame.mode >>> 10) &&& 1) == 1
+
       %{
         "index" => frame.frame_index,
-        "mode" => Map.get(@frame_mode_names, frame.mode, "UNKNOWN"),
-        "mode_id" => frame.mode,
+        "mode" => Map.get(@frame_mode_names, exec_mode, "UNKNOWN"),
+        "mode_id" => exec_mode,
+        "scope" => Map.get(@scope_names, scope, "unknown"),
+        "scope_id" => scope,
+        "atomic_batch" => atomic,
         "to" => frame.target_address_hash && Address.checksum(frame.target_address_hash),
         "gas_limit" => frame.gas_limit,
         "data" => frame.data,

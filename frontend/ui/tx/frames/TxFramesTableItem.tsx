@@ -33,8 +33,16 @@ const RowLabel = ({ children, isLoading }: { children: React.ReactNode; isLoadin
   </GridItem>
 );
 
-const TxFramesTableItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoading }: Props) => {
+const SCOPE_LABELS: Record<string, string> = {
+  any: '',
+  sender: 'scope: sender',
+  payer: 'scope: payer',
+  combined: 'scope: sender+payer',
+};
+
+const TxFramesTableItem = ({ index, mode, scope, atomic_batch: atomicBatch, to, gas_limit: gasLimit, data, isLoading }: Props) => {
   const dataBytes = data ? Math.floor((data.length - 2) / 2) : 0;
+  const scopeLabel = SCOPE_LABELS[scope] || '';
 
   return (
     <Box
@@ -43,8 +51,13 @@ const TxFramesTableItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoadi
         borderTopWidth: '1px',
         borderTopColor: { _light: 'blackAlpha.200', _dark: 'whiteAlpha.200' },
       }}
+      { ...(atomicBatch ? {
+        borderLeftWidth: '3px',
+        borderLeftColor: 'orange.400',
+        pl: 4,
+      } : {}) }
     >
-      { /* Header: Frame number + Mode tag + description */ }
+      { /* Header: Frame number + Mode tag + scope + atomic batch + description */ }
       <Flex alignItems="center" gap={ 3 } mb={ 4 }>
         <Skeleton loading={ isLoading } fontWeight={ 600 } fontSize="md">
           Frame { index }
@@ -52,6 +65,16 @@ const TxFramesTableItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoadi
         <Skeleton loading={ isLoading } display="inline-block">
           <Tag colorPalette={ MODE_COLORS[mode] || 'gray' }>{ mode }</Tag>
         </Skeleton>
+        { scopeLabel && (
+          <Skeleton loading={ isLoading } display="inline-block">
+            <Tag colorPalette="cyan" size="sm">{ scopeLabel }</Tag>
+          </Skeleton>
+        ) }
+        { atomicBatch && (
+          <Skeleton loading={ isLoading } display="inline-block">
+            <Tag colorPalette="orange" size="sm">atomic batch</Tag>
+          </Skeleton>
+        ) }
         <Skeleton loading={ isLoading } display="inline-block" color="text.secondary" fontSize="sm">
           { MODE_DESCRIPTIONS[mode] || '' }
         </Skeleton>

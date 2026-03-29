@@ -25,8 +25,16 @@ const MODE_DESCRIPTIONS: Record<string, string> = {
   DEFAULT: 'Contract execution',
 };
 
-const TxFramesListItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoading }: Props) => {
+const SCOPE_LABELS: Record<string, string> = {
+  any: '',
+  sender: 'scope: sender',
+  payer: 'scope: payer',
+  combined: 'scope: sender+payer',
+};
+
+const TxFramesListItem = ({ index, mode, scope, atomic_batch: atomicBatch, to, gas_limit: gasLimit, data, isLoading }: Props) => {
   const dataBytes = data ? Math.floor((data.length - 2) / 2) : 0;
+  const scopeLabel = SCOPE_LABELS[scope] || '';
 
   return (
     <Box
@@ -35,6 +43,7 @@ const TxFramesListItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoadin
         borderTopWidth: '1px',
         borderTopColor: { _light: 'blackAlpha.200', _dark: 'whiteAlpha.200' },
       }}
+      { ...(atomicBatch ? { borderLeftWidth: '3px', borderLeftColor: 'orange.400', pl: 3 } : {}) }
     >
       <Flex alignItems="center" gap={ 2 } mb={ 3 } flexWrap="wrap">
         <Skeleton loading={ isLoading } fontWeight={ 600 } fontSize="sm">
@@ -43,6 +52,16 @@ const TxFramesListItem = ({ index, mode, to, gas_limit: gasLimit, data, isLoadin
         <Skeleton loading={ isLoading } display="inline-block">
           <Tag colorPalette={ MODE_COLORS[mode] || 'gray' } size="sm">{ mode }</Tag>
         </Skeleton>
+        { scopeLabel && (
+          <Skeleton loading={ isLoading } display="inline-block">
+            <Tag colorPalette="cyan" size="sm">{ scopeLabel }</Tag>
+          </Skeleton>
+        ) }
+        { atomicBatch && (
+          <Skeleton loading={ isLoading } display="inline-block">
+            <Tag colorPalette="orange" size="sm">atomic</Tag>
+          </Skeleton>
+        ) }
         <Skeleton loading={ isLoading } display="inline-block" color="text.secondary" fontSize="xs">
           { MODE_DESCRIPTIONS[mode] || '' }
         </Skeleton>
