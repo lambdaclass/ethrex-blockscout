@@ -85,6 +85,7 @@ defmodule Explorer.Chain.Import.Runner.TransactionFrames do
       update: [
         set: [
           mode: fragment("EXCLUDED.mode"),
+          flags: fragment("EXCLUDED.flags"),
           target_address_hash: fragment("EXCLUDED.target_address_hash"),
           gas_limit: fragment("EXCLUDED.gas_limit"),
           data: fragment("EXCLUDED.data"),

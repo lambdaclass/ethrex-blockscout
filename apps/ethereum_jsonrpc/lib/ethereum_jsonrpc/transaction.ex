@@ -819,6 +819,7 @@ defmodule EthereumJSONRPC.Transaction do
         %{
           frame_index: index,
           mode: quantity_to_integer(frame["mode"]),
+          flags: quantity_to_integer(frame["flags"] || "0x0"),
           target_address_hash: frame["to"],
           gas_limit: quantity_to_integer(frame["gasLimit"]),
           data: frame["data"] || "0x"

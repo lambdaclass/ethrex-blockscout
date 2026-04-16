@@ -23,6 +23,7 @@ defmodule Indexer.Transform.TransactionFrames do
           transaction_hash: tx.hash,
           frame_index: frame.frame_index,
           mode: frame.mode,
+          flags: Map.get(frame, :flags, 0),
           target_address_hash: frame.target_address_hash,
           gas_limit: frame.gas_limit,
           data: frame.data
